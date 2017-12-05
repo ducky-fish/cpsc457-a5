@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <math.h>
 
 typedef std::string SS;
 typedef std::vector<SS> VS;
@@ -22,10 +23,10 @@ struct DEntry {
     SS fname = SS( 4096, 0);
     int size = 0;
     int ind = 0;
-    bool tooManyBlocks = true;
+    bool tooManyBlocks = false;
     bool tooFewBlocks = false;
-    bool hasCycle = true;
-    bool sharesBlocks = true;
+    bool hasCycle = false;
+    bool sharesBlocks = false;
 };
 
 static SS join( const VS & toks, const SS & sep) {
@@ -53,23 +54,28 @@ int checkConsistency( int blockSize, std::vector<DEntry> & files, std::vector<in
 
 
     printf("FUCK");
+    std::vector<int> visited;
 
     for(int i = 0; i<filesV.size();i++){
         DEntry file = filesV.at(i);
-        std::vector<int> visited;
+        int neededBlocks = ceil(file.size/(double)blockSize);
+        printf("Needed blocks = %d\n", neededBlocks);
         printf("%d\n", file.ind);
         if(file.ind == -1){
 
         }else{
 
+            bool beenBefore = false;
             //gotta check if we have already visited this node.
-            if(std::find(visited.begin(), visited.end(), file.ind)){
+            for(int j = 0; j<visited.size(); j++){
+                if(visited.at(j)==file.ind){
+                    printf("You have been here before.");
+                    beenBefore = true;
+                }
+            }
+
+            if(!beenBefore){
                 visited.push_back(file.ind);
-
-
-            //already visited
-            }else{
-                printf("You have been here before.");
             }
 
         }
