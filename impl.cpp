@@ -57,7 +57,7 @@ int checkConsistency( int blockSize, std::vector<DEntry> & files, std::vector<in
     std::vector<int> visited;
 
     for(int i = 0; i<filesV.size();i++){
-        DEntry file = filesV.at(i);
+        DEntry file = files[i];
         int neededBlocks = ceil(file.size/(double)blockSize);
         printf("Needed blocks = %d\n", neededBlocks);
         printf("%d\n", file.ind);
@@ -65,17 +65,59 @@ int checkConsistency( int blockSize, std::vector<DEntry> & files, std::vector<in
 
         }else{
 
-            bool beenBefore = false;
-            //gotta check if we have already visited this node.
-            for(int j = 0; j<visited.size(); j++){
-                if(visited.at(j)==file.ind){
-                    printf("You have been here before.");
-                    beenBefore = true;
+            int start = fatV.at(file.ind);
+            int actualBlocks = 1;
+            std::vector<int> selfVisited;
+
+            while(start != -1){
+
+                bool selfBeen = false;
+                for(int a = 0; a<selfVisited.size(); a++){
+                    if(selfVisited.at(a) == start){
+                        selfBeen = true;
+                    }
                 }
+                if (selfBeen){
+                    files[i].hasCycle = true;
+                    actualBlocks++;
+                    break;
+                }
+                actualBlocks++;
+                selfVisited.push_back(start);
+
+
+
+                start = fatV.at(start);
             }
 
-            if(!beenBefore){
-                visited.push_back(file.ind);
+
+
+            // for(;;){
+            //     if(start != -1){
+                    
+            //         bool selfBeen = false;
+            //         for(int a = 0; a<selfVisited.size(); a++){
+            //             if(selfVisited.at(a) == start){
+            //                 selfBeen = true;
+            //             }
+            //         }
+
+            //         if (selfBeen){
+            //             file.hasCycle = true;
+            //             break;
+            //         }
+            //         actualBlocks++;
+            //         selfVisited.push_back(start);
+            //         start = fatV.at(start);
+            //     }else{
+            //         break;
+            //     }
+            // }
+
+            if(actualBlocks>neededBlocks){
+                files[i].tooManyBlocks = true;
+            }else if(actualBlocks<neededBlocks){
+                files[i].tooFewBlocks = true;
             }
 
         }
