@@ -1,14 +1,7 @@
-// CPSC457 Fall 2017, University of Calgary
-// Skeleton C++ program for Q7 of Assignment 5.
-//
-// The program reads in the input, then calls the (wrongly implemented) checkConsistency()
-// function, and finally formats the output.
-//
-// You only need to reimplement the checkConsistency() function.
-//
-// Author: Pavol Federl (pfederl@ucalgary.ca or federl@gmail.com)
-// Date: November 29, 2017
-// Version: 1
+//Aidan Kelly
+//10173966
+//A5
+//It's super slow. Just a warning.
 
 #include <stdio.h>
 #include <string>
@@ -36,6 +29,21 @@ static SS join( const VS & toks, const SS & sep) {
     return res;
 }
 
+
+//way to check if element is in vector.
+bool isIn(std::vector<int> vect, int searching){
+
+    bool found = false;
+
+    for(int i = 0; i<vect.size(); i++){
+        if(vect.at(i)==searching){
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // re-implement this function
 //
 // Parameters:
@@ -52,31 +60,75 @@ int checkConsistency( int blockSize, std::vector<DEntry> & files, std::vector<in
     std::vector<DEntry> filesV = files;
     std::vector<int> fatV = fat;
 
+    //sets up the total used blocks
+    int overallUsedBlocks = 0;
 
-    printf("FUCK");
+
+    //create vector to hold the overall visited blocks.
     std::vector<int> visited;
 
+    //loop through the files
     for(int i = 0; i<filesV.size();i++){
+
+        std::vector<int> personalVisited;
+
+        //sets up the block counter.
+        int actualBlocks = 0;
+        
+        //make a copy of file
         DEntry file = filesV.at(i);
+
+        //calculate how many blocks are needed for the file
         int neededBlocks = ceil(file.size/(double)blockSize);
-        printf("Needed blocks = %d\n", neededBlocks);
-        printf("%d\n", file.ind);
+
+        //if file index is -1. means the file should be empty
         if(file.ind == -1){
 
+            //if file isnt empty, not enough blocks
+            if(neededBlocks > 0){
+                files[i].tooFewBlocks = true;
+            }
+
+        //else file has blocks
         }else{
 
-            bool beenBefore = false;
-            //gotta check if we have already visited this node.
-            for(int j = 0; j<visited.size(); j++){
-                if(visited.at(j)==file.ind){
-                    printf("You have been here before.");
-                    beenBefore = true;
+            //set up vectors to check for cycles and shared blocks
+
+            int start = file.ind;
+            while(start!=-1){
+                if(start == -1){
+                    break;
                 }
+
+                if(isIn(personalVisited, start)){
+                    files[i].hasCycle = true;
+                    break;
+                }
+
+                if(isIn(visited, start)){
+                    files[i].sharesBlocks = true;
+                }
+
+                
+                personalVisited.push_back(start);
+                visited.push_back(start);
+                start = fat.at(start);
+
+                actualBlocks++;
+
             }
 
-            if(!beenBefore){
-                visited.push_back(file.ind);
+            if(actualBlocks > neededBlocks){
+                files[i].tooManyBlocks = true;
+            }else if(actualBlocks < neededBlocks){
+                files[i].tooFewBlocks = true;
             }
+            printf("\nFile %d", i);
+            printf("Needed Blocks = %d Actual Blocks = %d", neededBlocks, actualBlocks);
+
+
+            
+            
 
         }
 
